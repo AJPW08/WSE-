@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { BookMarked, X, Settings, Copy, Trash2, BookOpen, Share2, Shield, Eye } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { BookMarked, X, Settings, Copy, Trash2, BookOpen, Share2, Shield, Eye, ArrowUpDown, Calendar, LayoutList } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppNote, NoteType, Visibility } from '../types';
 
@@ -25,6 +25,8 @@ interface RightSidebarProps {
   onToggleCollapse: () => void;
 }
 
+type SortOption = 'newest' | 'oldest' | 'type';
+
 export const RightSidebar: React.FC<RightSidebarProps> = ({
   notes,
   sharedNotes,
@@ -42,6 +44,16 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   onToggleCollapse
 }) => {
   const [showShared, setShowShared] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+
+  const sortedNotes = useMemo(() => {
+    return [...notes].sort((a, b) => {
+      if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (sortBy === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      if (sortBy === 'type') return a.note_type.localeCompare(b.note_type);
+      return 0;
+    });
+  }, [notes, sortBy]);
 
   return (
     <div className="relative flex h-full">
@@ -189,14 +201,39 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
               {/* Personal Notes List */}
               <div className="pt-4 pb-20">
-                <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                   <Eye size={12} />
-                   Saved Perspectives
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                    <Eye size={12} />
+                    Saved Perspectives
+                  </h3>
+                  <div className="flex items-center gap-1.5 bg-zinc-100 p-1 rounded-lg">
+                    <button 
+                      onClick={() => setSortBy('newest')}
+                      className={`p-1.5 rounded-md transition-all ${sortBy === 'newest' ? 'bg-white text-brand-orange shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}
+                      title="Newest First"
+                    >
+                      <ArrowUpDown size={12} />
+                    </button>
+                    <button 
+                      onClick={() => setSortBy('oldest')}
+                      className={`p-1.5 rounded-md transition-all ${sortBy === 'oldest' ? 'bg-white text-brand-orange shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}
+                      title="Oldest First"
+                    >
+                      <Calendar size={12} />
+                    </button>
+                    <button 
+                      onClick={() => setSortBy('type')}
+                      className={`p-1.5 rounded-md transition-all ${sortBy === 'type' ? 'bg-white text-brand-orange shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}
+                      title="Sort by Type"
+                    >
+                      <LayoutList size={12} />
+                    </button>
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <AnimatePresence initial={false}>
-                    {notes.length > 0 ? (
-                      notes.map((note) => (
+                    {sortedNotes.length > 0 ? (
+                      sortedNotes.map((note) => (
                         <motion.div
                           key={note.note_id}
                           layout

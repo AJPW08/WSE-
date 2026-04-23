@@ -29,7 +29,7 @@ async function sync() {
       await git.addRemote({ fs, dir, remote: 'origin', url: repoUrl });
     } catch (e) {}
 
-    // 3. Stage all files (excluding node_modules and other ignores)
+    // 3. Stage all files
     console.log('Staging files...');
     const globby = (await import('globby')).globby;
     const paths = await globby(['**/*', '!.git', '!node_modules', '!dist'], { cwd: dir, dot: true });
@@ -47,7 +47,7 @@ async function sync() {
         name: 'AI Studio Assistant',
         email: 'ajpwworkemail@gmail.com',
       },
-      message: `Feature: Collapsible Notes Engine - ${new Date().toISOString()}`,
+      message: `Feature: Support sorting notes by date and type - ${new Date().toISOString()}`,
     });
 
     // 5. Push to Staging
