@@ -206,7 +206,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     <Eye size={12} />
                     Saved Perspectives
                   </h3>
-                  <div className="flex items-center gap-1.5 bg-zinc-100 p-1 rounded-lg">
+                  <div className="flex items-center gap-2 bg-zinc-100 p-1 rounded-lg">
+                    <span className="text-[8px] font-black text-zinc-400 uppercase tracking-widest pl-2 pr-1">Sort:</span>
                     <button 
                       onClick={() => setSortBy('newest')}
                       className={`p-1.5 rounded-md transition-all ${sortBy === 'newest' ? 'bg-white text-brand-orange shadow-sm' : 'text-zinc-400 hover:text-zinc-600'}`}

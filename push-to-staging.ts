@@ -19,17 +19,13 @@ async function sync() {
   console.log(`Starting push to ${repoUrl} [${branch}]...`);
 
   try {
-    // 1. Initialize Git if not already
     if (!fs.existsSync(path.join(dir, '.git'))) {
       await git.init({ fs, dir, defaultBranch: 'staging' });
     }
-
-    // 2. Add remote if not already
     try {
       await git.addRemote({ fs, dir, remote: 'origin', url: repoUrl });
     } catch (e) {}
 
-    // 3. Stage all files
     console.log('Staging files...');
     const globby = (await import('globby')).globby;
     const paths = await globby(['**/*', '!.git', '!node_modules', '!dist'], { cwd: dir, dot: true });
@@ -38,7 +34,6 @@ async function sync() {
       await git.add({ fs, dir, filepath });
     }
 
-    // 4. Commit
     console.log('Committing changes...');
     await git.commit({
       fs,
@@ -47,10 +42,9 @@ async function sync() {
         name: 'AI Studio Assistant',
         email: 'ajpwworkemail@gmail.com',
       },
-      message: `Visual Refinement: Enhanced personal note cards styling - ${new Date().toISOString()}`,
+      message: `Enhancement: Added "Sort:" label to personal notes controls - ${new Date().toISOString()}`,
     });
 
-    // 5. Push to Staging
     console.log(`Pushing to ${branch} branch...`);
     const pushResult = await git.push({
       fs,
