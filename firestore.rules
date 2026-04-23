@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} { allow read, write: if false; }
+
+    // Helpers
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    // Group Membership Check
+    function isMemberOfGroup(groupId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/groups/$(groupId)) && 
+             request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.members;
+    }
+
+    function isLeaderOrAdminOfGroup(groupId) {
+       let group = get(/databases/$(database)/documents/groups/$(groupId)).data;
+       let role = group.role_overrides[request.auth.uid];
+       return isSignedIn() && (role == 'leader' || role == 'admin');
+    }
+
+    // Entity Validations
+    function isValidUser(data) {
+      return data.user_id is string && data.user_id.size() <= 128 &&
+             data.user_name is string && data.user_name.size() <= 100 &&
+             data.role is string &&
+             data.licensed is bool;
+    }
+
+    function isValidNote(data) {
+      return data.note_id is string &&
+             data.user_id == request.auth.uid &&
+             data.group_id is string &&
+             data.content is string && data.content.size() <= 5000 &&
+             data.visibility in ['private', 'shared_group'];
+    }
+
+    function isValidProgress(data) {
+      return data.user_id == request.auth.uid &&
+             data.group_id is string &&
+             data.status in ['completed', 'not_started'];
+    }
+
+    // --- Rules ---
+
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow create, update: if isOwner(userId) && isValidUser(incoming());
+    }
+
+    match /groups/{groupId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && request.auth.uid in resource.data.members;
+      allow create: if isSignedIn() && isValidId(groupId);
+      allow update: if isMemberOfGroup(groupId);
+    }
+
+    match /studyPlans/{planId} {
+      allow read: if isSignedIn();
+      match /sessions/{sessionId} {
+        allow read: if isSignedIn();
+      }
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if isSignedIn() && isMemberOfGroup(resource.data.group_id);
+      allow create: if isSignedIn() && isLeaderOrAdminOfGroup(incoming().group_id);
+      allow delete: if isSignedIn() && isLeaderOrAdminOfGroup(existing().group_id);
+    }
+
+    match /progress/{progressId} {
+      allow read: if isSignedIn() && (isOwner(resource.data.user_id) || isLeaderOrAdminOfGroup(resource.data.group_id));
+      allow create, update: if isSignedIn() && isOwner(incoming().user_id) && isMemberOfGroup(incoming().group_id) && isValidProgress(incoming());
+    }
+
+    match /notes/{noteId} {
+      allow read: if isSignedIn() && 
+                    (isOwner(resource.data.user_id) || 
+                    (resource.data.visibility == 'shared_group' && isMemberOfGroup(resource.data.group_id)));
+      
+      allow create: if isSignedIn() && isMemberOfGroup(incoming().group_id) && isValidNote(incoming());
+      
+      allow update: if isSignedIn() && isOwner(existing().user_id) && 
+                      incoming().user_id == existing().user_id && 
+                      incoming().group_id == existing().group_id &&
+                      isValidNote(incoming()) &&
+                      incoming().diff(existing()).affectedKeys().hasOnly(['content', 'visibility', 'note_type', 'verse_id']);
+      
+      allow delete: if isSignedIn() && isOwner(existing().user_id);
+    }
+  }
+}

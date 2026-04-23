@@ -1,0 +1,147 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile data including roles and license status",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "user_name": { "type": "string" },
+        "role": { "type": "string" },
+        "licensed": { "type": "boolean" },
+        "membership_level": { "type": "string" },
+        "church_id": { "type": "string" },
+        "church_name": { "type": "string" }
+      },
+      "required": ["user_id", "user_name", "role", "licensed"]
+    },
+    "Group": {
+      "title": "Study Group",
+      "description": "A group of users studying together",
+      "type": "object",
+      "properties": {
+        "group_id": { "type": "string" },
+        "group_name": { "type": "string" },
+        "church_id": { "type": "string" },
+        "church_name": { "type": "string" },
+        "group_override": { "type": "string" },
+        "members": { "type": "array", "items": { "type": "string" } },
+        "role_overrides": { "type": "object" }
+      },
+      "required": ["group_id", "group_name", "members"]
+    },
+    "StudyPlan": {
+      "title": "Study Plan",
+      "description": "A curriculum for Bible study",
+      "type": "object",
+      "properties": {
+        "plan_id": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "audience": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "plan_type": { "type": "string", "enum": ["platform", "church", "private"] },
+        "duration_weeks": { "type": "integer" },
+        "length_sessions": { "type": "integer" },
+        "cadence": { "type": "string" },
+        "format_type": { "type": "string" },
+        "season_tag": { "type": "string" },
+        "bible_book_focus": { "type": "string" }
+      },
+      "required": ["plan_id", "title", "plan_type"]
+    },
+    "Session": {
+      "title": "Study Session",
+      "description": "A single session within a study plan",
+      "type": "object",
+      "properties": {
+        "session_id": { "type": "string" },
+        "plan_id": { "type": "string" },
+        "title": { "type": "string" },
+        "order": { "type": "integer" },
+        "week": { "type": "integer" },
+        "primary_verse": { "type": "string" },
+        "supporting_verses": { "type": "array", "items": { "type": "string" } },
+        "teaching": { "type": "string" },
+        "reflection": { "type": "string" }
+      },
+      "required": ["session_id", "plan_id", "title", "order"]
+    },
+    "Assignment": {
+      "title": "Plan Assignment",
+      "description": "Linking a study plan to a group",
+      "type": "object",
+      "properties": {
+        "assignment_id": { "type": "string" },
+        "group_id": { "type": "string" },
+        "plan_id": { "type": "string" },
+        "assigned_by": { "type": "string" },
+        "assigned_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["assignment_id", "group_id", "plan_id"]
+    },
+    "Progress": {
+      "title": "User Progress",
+      "description": "Tracking user completion of sessions",
+      "type": "object",
+      "properties": {
+        "progress_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "group_id": { "type": "string" },
+        "session_id": { "type": "string" },
+        "status": { "type": "string", "enum": ["completed", "not_started"] },
+        "completed_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["progress_id", "user_id", "group_id", "session_id", "status"]
+    },
+    "AppNote": {
+      "title": "Note",
+      "description": "A personal or shared note",
+      "type": "object",
+      "properties": {
+        "note_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "user_name": { "type": "string" },
+        "group_id": { "type": "string" },
+        "plan_id": { "type": "string" },
+        "session_id": { "type": "string" },
+        "note_type": { "type": "string", "enum": ["session", "verse", "plan"] },
+        "content": { "type": "string" },
+        "verse_id": { "type": "string" },
+        "visibility": { "type": "string", "enum": ["private", "shared_group"] },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["note_id", "user_id", "group_id", "plan_id", "content", "visibility"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Root users collection"
+    },
+    "/groups/{groupId}": {
+      "schema": "Group",
+      "description": "Root groups collection"
+    },
+    "/studyPlans/{planId}": {
+      "schema": "StudyPlan",
+      "description": "Root study plans collection"
+    },
+    "/studyPlans/{planId}/sessions/{sessionId}": {
+      "schema": "Session",
+      "description": "Sessions within a plan"
+    },
+    "/assignments/{assignmentId}": {
+      "schema": "Assignment",
+      "description": "Global assignments of plans to groups"
+    },
+    "/progress/{progressId}": {
+      "schema": "Progress",
+      "description": "Global user progress across all sessions"
+    },
+    "/notes/{noteId}": {
+      "schema": "AppNote",
+      "description": "Global notes collection with cross-references"
+    }
+  }
+}
