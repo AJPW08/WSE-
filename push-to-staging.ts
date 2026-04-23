@@ -47,7 +47,7 @@ async function sync() {
         name: 'AI Studio Assistant',
         email: 'ajpwworkemail@gmail.com',
       },
-      message: `Feature: Support sorting notes by date and type - ${new Date().toISOString()}`,
+      message: `Visual Refinement: Enhanced personal note cards styling - ${new Date().toISOString()}`,
     });
 
     // 5. Push to Staging
