@@ -237,42 +237,69 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                         <motion.div
                           key={note.note_id}
                           layout
-                          initial={{ x: 20, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          exit={{ x: -20, opacity: 0 }}
-                          className="p-5 bg-white rounded-2xl border border-zinc-100 space-y-4 relative group shadow-sm hover:shadow-md transition-all"
+                          initial={{ scale: 0.95, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.95, opacity: 0 }}
+                          whileHover={{ y: -2 }}
+                          className={`p-6 bg-white rounded-2xl border-l-[6px] border border-zinc-100 space-y-4 relative group shadow-sm hover:shadow-xl hover:border-zinc-200 transition-all ${
+                            note.note_type === 'session' ? 'border-l-brand-orange' : 
+                            note.note_type === 'verse' ? 'border-l-blue-500' : 'border-l-zinc-800'
+                          }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className={`text-[9px] uppercase font-black tracking-widest px-2.5 py-1 rounded-md border ${
-                              note.note_type === 'session' ? 'bg-orange-50 border-orange-100 text-orange-600' : 'bg-blue-50 border-blue-100 text-blue-600'
-                            }`}>
-                              {note.note_type}
-                            </span>
-                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="w-7 h-7 rounded-lg flex items-center justify-center bg-zinc-50 text-zinc-400 hover:text-zinc-600 active:scale-90"><Copy size={14} /></button>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[8px] uppercase font-black tracking-[0.15em] px-2 py-0.5 rounded-full border ${
+                                note.note_type === 'session' ? 'bg-orange-50 border-orange-100 text-orange-600' : 
+                                note.note_type === 'verse' ? 'bg-blue-50 border-blue-100 text-blue-600' : 
+                                'bg-zinc-100 border-zinc-200 text-zinc-600'
+                              }`}>
+                                {note.note_type}
+                              </span>
+                              {note.visibility === 'shared_group' && (
+                                <span className="flex items-center gap-1 text-[8px] font-black text-brand-orange uppercase tracking-widest bg-brand-orange/5 px-2 py-0.5 rounded-full">
+                                  <Share2 size={8} />
+                                  Shared
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button 
+                                className="w-8 h-8 rounded-xl flex items-center justify-center bg-zinc-50 text-zinc-400 hover:text-brand-orange hover:bg-white border border-transparent hover:border-zinc-100 shadow-sm transition-all active:scale-95"
+                                title="Copy Content"
+                              >
+                                <Copy size={14} />
+                              </button>
                               <button 
                                 onClick={() => onDeleteNote(note.note_id)}
-                                className="w-7 h-7 rounded-lg flex items-center justify-center bg-red-50 text-red-400 hover:bg-red-100 active:scale-90"
+                                className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-50 text-red-400 hover:bg-red-500 hover:text-white shadow-sm transition-all active:scale-95"
+                                title="Delete Note"
                               >
                                 <Trash2 size={14} />
                               </button>
                             </div>
                           </div>
-                          <p className="text-sm font-serif leading-relaxed text-zinc-700 italic">"{note.content}"</p>
-                          <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+
+                          <div className="relative">
+                            <div className="absolute -left-3 top-0 bottom-0 w-0.5 bg-zinc-50" />
+                            <p className="text-[15px] font-serif leading-[1.65] text-zinc-800 italic indent-2">
+                              {note.content}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-zinc-50">
                             {note.verse_id ? (
-                              <button className="flex items-center gap-1.5 text-[9px] font-black text-brand-orange uppercase tracking-wider hover:underline">
-                                <BookOpen size={10} />
+                              <button className="flex items-center gap-2 text-[10px] font-black text-brand-orange uppercase tracking-widest hover:text-brand-dark transition-colors group/link">
+                                <div className="w-5 h-5 rounded-md bg-brand-orange/10 flex items-center justify-center group-hover/link:bg-brand-orange transition-colors">
+                                  <BookOpen size={10} className="group-hover/link:text-white" />
+                                </div>
                                 {note.verse_id}
                               </button>
                             ) : <div />}
-                            <span className="text-[9px] font-bold text-zinc-300 uppercase">{note.created_at}</span>
-                          </div>
-                          {note.visibility === 'shared_group' && (
-                            <div className="absolute -top-2 -right-2 w-6 h-6 bg-brand-orange text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
-                               <Share2 size={10} />
+                            <div className="flex flex-col items-end">
+                              <span className="text-[9px] font-black text-zinc-300 uppercase tracking-tighter">{note.created_at}</span>
                             </div>
-                          )}
+                          </div>
                         </motion.div>
                       ))
                     ) : (
